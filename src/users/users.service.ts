@@ -11,45 +11,57 @@ export class UsersService {
         private readonly userModel: typeof User
     ) {}
 
-    getAllUsers() {
+    async getAllUsers() {
         try {
-            return this.userModel.findAll();
+            return await this.userModel.findAll();
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new Error('Unable to fetch users');
         }
     }
 
-    getUserById(id: string) {
+    async getUserById(id: string) {
         try {
-            return this.userModel.findByPk(id);
+            const user = await this.userModel.findByPk(id);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            return user;
         } catch (error) {
             console.error('Error fetching user:', error);
             throw new Error('Unable to fetch user');
         }
     }
 
-    createUser(createUserDto: CreateUserDto) {
+    async createUser(createUserDto: CreateUserDto) {
         try {
-            return this.userModel.create(createUserDto);
+            return await this.userModel.create(createUserDto);
         } catch (error) {
             console.error('Error creating user:', error);
             throw new Error('Unable to create user');
         }
     }
 
-    updateUser(id: string, updateUserDto: UpdateUserDto) {
+    async updateUser(id: string, updateUserDto: UpdateUserDto) {
         try {
-            return this.userModel.update(updateUserDto, { where: { id } });
+            const user = await this.userModel.findByPk(id);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            return await user.update(updateUserDto);
         } catch (error) {
             console.error('Error updating user:', error);
             throw new Error('Unable to update user');
         }
     }
 
-    deleteUser(id: string) {
+    async deleteUser(id: string) {
         try {
-            return this.userModel.destroy({ where: { id } });
+            const user = await this.userModel.findByPk(id);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            return await user.destroy();
         } catch (error) {
             console.error('Error deleting user:', error);
             throw new Error('Unable to delete user');
