@@ -1,45 +1,58 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { InjectModel } from "@nestjs/sequelize";
+import { User } from "./users.model";
 
 @Injectable()
 export class UsersService {
+    constructor(
+        @InjectModel(User)
+        private readonly userModel: typeof User
+    ) {}
+
     getAllUsers() {
-        return [
-            { id: "1", name: 'John Doe' },
-            { id: "2", name: 'Jane Doe' },
-        ];
+        try {
+            return this.userModel.findAll();
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            throw new Error('Unable to fetch users');
+        }
     }
 
     getUserById(id: string) {
-        const users = this.getAllUsers();
-        return users.find(user => user.id === id);
-    }
-
-    createUser(user: CreateUserDto) {
-        const users = this.getAllUsers();
-        const newUser = { id: (users.length + 1).toString(), name: user.username };
-        users.push(newUser);
-        return newUser;
-    }
-
-    updateUser(id: string, user: UpdateUserDto) {
-        const users = this.getAllUsers();
-        const existingUser = users.find(u => u.id === id);
-        if (existingUser) {
-            existingUser.name = user.username;
-            return existingUser;
+        try {
+            return this.userModel.findByPk(id);
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            throw new Error('Unable to fetch user');
         }
-        return null;
+    }
+
+    createUser(createUserDto: CreateUserDto) {
+        try {
+            return this.userModel.create(createUserDto);
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw new Error('Unable to create user');
+        }
+    }
+
+    updateUser(id: string, updateUserDto: UpdateUserDto) {
+        try {
+            return this.userModel.update(updateUserDto, { where: { id } });
+        } catch (error) {
+            console.error('Error updating user:', error);
+            throw new Error('Unable to update user');
+        }
     }
 
     deleteUser(id: string) {
-        const users = this.getAllUsers();
-        const index = users.findIndex(user => user.id === id);
-        if (index !== -1) {
-            const deletedUser = users.splice(index, 1);
-            return deletedUser[0];
+        try {
+            return this.userModel.destroy({ where: { id } });
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            throw new Error('Unable to delete user');
         }
-        return null;
     }
 }
