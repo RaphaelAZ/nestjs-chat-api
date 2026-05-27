@@ -4,17 +4,27 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { User } from "./users.model";
 import { PasswordService } from "src/security/password/password.service";
+import { EmailService } from "src/security/email/email.service";
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(User) private readonly userModel: typeof User,
-        private readonly passwordService: PasswordService
+        private readonly passwordService: PasswordService,
+        private readonly emailService: EmailService
     ) {}
 
     async getAllUsers() {
         try {
-            return await this.userModel.findAll();
+            const users = await this.userModel.findAll({
+                attributes: { exclude: ['password'] },
+                raw: true,
+            });
+
+            return users.map(user => ({
+                ...user,
+                email: this.emailService.maskEmail(user.email),
+            }));
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new Error('Unable to fetch users');
@@ -23,11 +33,17 @@ export class UsersService {
 
     async getUserById(id: string) {
         try {
-            const user = await this.userModel.findByPk(id);
+            const user = await this.userModel.findByPk(id, {
+                attributes: { exclude: ['password'] },
+                raw: true,
+            });
             if (!user) {
                 throw new Error('User not found');
             }
-            return user;
+            return {
+                ...user,
+                email: this.emailService.maskEmail(user.email),
+            };
         } catch (error) {
             console.error('Error fetching user:', error);
             throw new Error('Unable to fetch user');
