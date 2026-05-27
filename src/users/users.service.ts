@@ -3,12 +3,13 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { User } from "./users.model";
+import { PasswordService } from "src/security/password/password.service";
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel(User)
-        private readonly userModel: typeof User
+        @InjectModel(User) private readonly userModel: typeof User,
+        private readonly passwordService: PasswordService
     ) {}
 
     async getAllUsers() {
@@ -35,7 +36,8 @@ export class UsersService {
 
     async createUser(createUserDto: CreateUserDto) {
         try {
-            return await this.userModel.create(createUserDto);
+            const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+            return await this.userModel.create({ ...createUserDto, password: hashedPassword });
         } catch (error) {
             console.error('Error creating user:', error);
             throw new Error('Unable to create user');
@@ -48,7 +50,8 @@ export class UsersService {
             if (!user) {
                 throw new Error('User not found');
             }
-            return await user.update(updateUserDto);
+            const hashedPassword = updateUserDto.password ? await this.passwordService.hashPassword(updateUserDto.password) : undefined;
+            return await user.update({ ...updateUserDto, password: hashedPassword });
         } catch (error) {
             console.error('Error updating user:', error);
             throw new Error('Unable to update user');
