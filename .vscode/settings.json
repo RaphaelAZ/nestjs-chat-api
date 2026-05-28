@@ -1,0 +1,11 @@
+{
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": null,
+  "[typescript]": {
+    "editor.defaultFormatter": null
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": null
+  }
+}
