@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectModel } from "@nestjs/sequelize";
-import { User } from "./users.model";
+import { User } from "./entity/users.model";
 import { PasswordService } from "src/security/password/password.service";
 import { EmailService } from "src/security/email/email.service";
 import { UpdatePasswordDto } from "./dto/update-password.dto";
